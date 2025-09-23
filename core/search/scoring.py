@@ -97,9 +97,9 @@ def business_freshness(business_date: datetime | str | None) -> float:
             return 0.0
 
         age_days = (datetime.now(timezone.utc) - bd).days
-        lam = math.log(2.0) / os.getenv("FRESHNESS_HALFLIFE_DAYS")
+        lam = math.log(2.0) / float(os.getenv("FRESHNESS_HALFLIFE_DAYS"))
         score = float(math.exp(-lam * max(age_days, 0)))
-        print(f"📅 Freshness score: {score:.3f} (age: {age_days} days, half-life: {os.getenv("FRESHNESS_HALFLIFE_DAYS")} days)")
+        print(f"📅 Freshness score: {score:.3f} (age: {age_days} days, half-life: {float(os.getenv("FRESHNESS_HALFLIFE_DAYS"))} days)")
         return score
     except Exception as e:
         print(f"❌ Error calculating freshness score: {e}")
@@ -109,13 +109,13 @@ def _fuse_scores(rows: List[Dict[str, Any]], entity_type: str = "generic",
                  w_semantic: float = 0.5, w_bm25: float = 0.3, 
                  w_vector: float = 0.1, w_business: float = 0.1) -> List[Dict[str, Any]]:
     """
-    Generic score fusion function for both articles and authors.
+    Generic score fusion function for both items and authors.
     Combines semantic, BM25, vector, and business scores with configurable weights.
     If semantic scores are all zero, redistributes weight to BM25.
     
     Args:
         rows: List of search result rows to fuse
-        entity_type: String describing entity type for logging (e.g., "article", "author")
+        entity_type: String describing entity type for logging (e.g., "item", "author")
         w_semantic: Weight for semantic score component
         w_bm25: Weight for BM25 score component  
         w_vector: Weight for vector score component
@@ -141,7 +141,7 @@ def _fuse_scores(rows: List[Dict[str, Any]], entity_type: str = "generic",
         
         if not semantic_available:
             print("⚠️ No semantic scores available - redistributing semantic weight to BM25 and vector")
-            # Redistribute semantic weight to vector for articles, BM25 for authors
+            # Redistribute semantic weight to vector for items, BM25 for authors
             w_semantic_adj = 0.0
             w_bm25_adj = w_bm25
             w_vector_adj = w_vector + w_semantic
@@ -196,18 +196,18 @@ def _fuse_scores(rows: List[Dict[str, Any]], entity_type: str = "generic",
         print(f"❌ {entity_type.title()} fusion failed: {e}")
         raise
 
-def fuse_articles(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def fuse_items(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Fuse article scores: final = 0.5*semantic + 0.3*bm25 + 0.1*vector + 0.1*business
+    Fuse item scores: final = 0.5*semantic + 0.3*bm25 + 0.1*vector + 0.1*business
     If semantic scores are all zero (semantic search unavailable), redistribute weight to vector.
     """
     return _fuse_scores(
         rows,
-        entity_type="article",
-        w_semantic=os.getenv("w_semantic"),
-        w_bm25=os.getenv("w_bm25"),
-        w_vector=os.getenv("w_vector"),
-        w_business=os.getenv("w_business")
+        entity_type="item",
+        w_semantic=float(os.getenv("WEIGHT_SEMANTIC")),
+        w_bm25=float(os.getenv("WEIGHT_BM25")),
+        w_vector=float(os.getenv("WEIGHT_VECTOR")),
+        w_business=float(os.getenv("WEIGHT_BUSINESS"))
     )
 
 def fuse_authors(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -218,8 +218,11 @@ def fuse_authors(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return _fuse_scores(
         rows,
         entity_type="author",
-        w_semantic=os.getenv("aw_semantic"),
-        w_bm25=os.getenv("aw_bm25"),
-        w_vector=os.getenv("aw_vector"),
-        w_business=os.getenv("aw_business")
+        w_semantic=float(os.getenv("AUTHORS_WEIGHT_SEMANTIC")),
+        w_bm25=float(os.getenv("AUTHORS_WEIGHT_BM25")),
+        w_vector=float(os.getenv("AUTHORS_WEIGHT_VECTOR")),
+        w_business=float(os.getenv("AUTHORS_WEIGHT_BUSINESS"))
     )
+
+
+

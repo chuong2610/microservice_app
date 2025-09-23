@@ -4,3 +4,5 @@ pydantic
 openai
 pytest
 requests
+fastapi
+uvicorn
