@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # Kong Database
+  kong-database:
+    image: postgres:13
+    container_name: kong-database
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_DB: kong
+      POSTGRES_PASSWORD: kong
+    ports:
+      - "5432:5432"
+    volumes:
+      - kong_data:/var/lib/postgresql/data
+    networks:
+      - kong-net
+
+  # Kong Migration
+  kong-migrations:
+    image: kong:3.6
+    command: "kong migrations bootstrap"
+    depends_on:
+      - kong-database
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+    networks:
+      - kong-net
+
+  # Kong Gateway (DB mode with declarative config)
+  kong:
+    image: kong:3.6
+    container_name: kong-gateway
+    depends_on:
+      - kong-database
+      - kong-migrations
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001"
+    ports:
+      - "8000:8000"  # Proxy
+      - "8001:8001"  # Admin API
+    volumes:
+      - ./kong.yml:/kong/kong.yml
+    networks:
+      - kong-net
+
+  # Authentication Service
+  # auth-service:
+  #   build: ../authentication
+  #   container_name: auth-service
+  #   ports:
+  #     - "8002:8000"
+  #   networks:
+  #     - kong-net
+
+  # Kong Deck (Config Loader)
+  kong-deck:
+    image: kong/deck:v1.39.3
+    container_name: kong-deck
+    depends_on:
+      - kong
+    volumes:
+      - ./kong.yml:/kong.yml
+    networks:
+      - kong-net
+    command: ["sync", "--kong-addr", "http://kong:8001", "-s", "/kong.yml"]
+    restart: "no"
+
+networks:
+  kong-net:
+    driver: bridge
+
+volumes:
+  kong_data:

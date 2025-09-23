@@ -9,21 +9,25 @@ class AuthService:
 
     def login(self, email: str, password: str):
         user = self.user_repo.get_user_by_email(email)
-        if not user or not auth_utils.verify_password(password, user["hashed_password"]):
+        if not user or not auth_utils.verify_password(password, user["password"]):
             raise Exception("Invalid credentials")
         access_token = auth_utils.create_access_token({"sub": user["id"]})
         refresh_token = auth_utils.create_refresh_token({"sub": user["id"]})
+        self.token_repo.save_refresh_token(user, refresh_token)
         return {"access_token": access_token, "refresh_token": refresh_token}
     
     def decode_token(self, token: str):
         return auth_utils.decode_token(token)
 
     def refresh(self, user_id: str, refresh_token: str):
+        user = self.user_repo.get_user_by_id(user_id)
         stored = self.token_repo.get_refresh_token(user_id)
         if not stored or stored["token"] != refresh_token:
             raise Exception("Invalid refresh token")
         payload = auth_utils.decode_token(refresh_token)
         new_access_token = auth_utils.create_access_token({"sub": payload["sub"]})
+        refresh_token = auth_utils.create_refresh_token({"sub": user["id"]})
+        self.token_repo.save_refresh_token(user, refresh_token)
         return {"access_token": new_access_token, "refresh_token": refresh_token}
 
     def logout(self, user_id: str):

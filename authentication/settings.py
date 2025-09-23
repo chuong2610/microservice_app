@@ -1,13 +1,15 @@
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
-    COSMOS_ENDPOINT = "COSMOS_ENDPOINT"
-    COSMOS_KEY = "COSMOS_KEY"
-    COSMOS_DB_NAME =  "authdb"
-    COSMOS_CONTAINER_NAME = "users"
+    COSMOS_ENDPOINT: str = "COSMOS_ENDPOINT"
+    COSMOS_KEY: str = "COSMOS_KEY"
+    COSMOS_DB_NAME: str = "authdb"
+    COSMOS_CONTAINER_NAME: str = "users"
 
-    REDIS_HOST = "localhost"
-    REDIS_PORT = 6380
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6380
+    REDIS_PASSWORD: str = ""
+    REDIS_SSL: bool = False
 
     SECRET_KEY: str = "secret"
     ALGORITHM: str = "HS256"

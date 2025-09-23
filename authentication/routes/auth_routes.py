@@ -19,3 +19,7 @@ def decode_token(token_request: TokenDecodeRequest):
 @router.post("/refresh")
 def refresh_token(request: TokenRefreshRequest):
     return service.refresh(request.user_id, request.refresh_token)
+
+@router.get("/health")
+def health_check():
+    return {"status": "healthy"}
