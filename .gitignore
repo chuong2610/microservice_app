@@ -5,6 +5,7 @@ frontend/env.blog
 frontend/env.news
 frontend/env.tech
 frontend/env.example
+test/
 
 # -------------------------
 # Python

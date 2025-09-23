@@ -1,0 +1,6 @@
+azure-search-documents
+python-dotenv
+pydantic
+openai
+pytest
+requests
