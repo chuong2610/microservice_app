@@ -8,3 +8,5 @@ requests
 azure-cosmos
 fastapi
 uvicorn
+redis
+tzdata

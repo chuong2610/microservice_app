@@ -10,6 +10,7 @@ class Item(BaseModel):
     images: list[str] = []
     tags: list[str] = []
     category: list[str] = []
+    meta_field: dict
     createdAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
     updatedAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
     status: str = "draft"  

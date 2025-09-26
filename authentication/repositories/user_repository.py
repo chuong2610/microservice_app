@@ -1,6 +1,6 @@
 from db.database import container
 import uuid
-from authentication.models.user_model import User
+from models.user_model import User
 
 class UserRepository:
     def get_user_by_email(self, email: str):

@@ -30,10 +30,10 @@ from azure.search.documents import SearchClient
 from azure.search.documents.models import VectorizedQuery
 from azure.core.exceptions import HttpResponseError
 
-from core.services.llm_service import build_default_service
-from core.search.scoring import fuse_items, fuse_authors, business_freshness
-from core.search.fuzzy_matching import fuzzy_match_authors
-from core.services.prompts import prompts
+from services.llm_service import build_default_service
+from search.scoring import fuse_items, fuse_authors, business_freshness
+from search.fuzzy_matching import fuzzy_match_authors
+from services.prompts import prompts
 
 SCORE_THRESHOLD = 0.1
 
@@ -471,7 +471,7 @@ class SearchService:
             vec_res = vector_future.result()
             
             id_to_row = {r["id"]: r for r in rows}
-            vec_count = len(vec_res)
+            vec_count = len(vec_res)    
             
             # vec_res are item documents directly from abstract vector search
             for d in vec_res:

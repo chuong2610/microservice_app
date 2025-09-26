@@ -223,6 +223,3 @@ def fuse_authors(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         w_vector=float(os.getenv("AUTHORS_WEIGHT_VECTOR")),
         w_business=float(os.getenv("AUTHORS_WEIGHT_BUSINESS"))
     )
-
-
-
