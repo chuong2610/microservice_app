@@ -34,11 +34,11 @@ class ItemRepository:
             "total_pages": total_pages
         }
 
-    def get_items_by_author(self, author_id: str, page_number=1, page_size=10):
-        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.authorId=@authId"
+    def get_items_by_author(self, user_id: str, page_number=1, page_size=10):
+        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.userId=@user_id"
         total_items = list(container.query_items(
             query=count_query,
-            parameters=[{"name": "@authId", "value": author_id}],
+            parameters=[{"name": "@user_id", "value": user_id}],
             enable_cross_partition_query=True
         ))[0]
 
@@ -48,7 +48,7 @@ class ItemRepository:
         query = f"SELECT * FROM c WHERE c.authorId=@authId OFFSET {offset} LIMIT {page_size}"
         items = list(container.query_items(
             query=query,
-            parameters=[{"name": "@authId", "value": author_id}],
+            parameters=[{"name": "@user_id", "value": user_id}],
             enable_cross_partition_query=True
         ))
 
@@ -61,7 +61,7 @@ class ItemRepository:
         }
     
     def get_items_by_category(self, category: str, page_number=1, page_size=10):
-        count_query = "SELECT VALUE COUNT(1) FROM c WHERE ARRAY_CONTAINS(c.category, @cat)"
+        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.category = @cat"
         total_items = list(container.query_items(
             query=count_query,
             parameters=[{"name": "@cat", "value": category}],
@@ -71,7 +71,7 @@ class ItemRepository:
         total_pages = (total_items + page_size - 1) // page_size
         offset = (page_number - 1) * page_size
 
-        query = f"SELECT * FROM c WHERE ARRAY_CONTAINS(c.category, @cat) OFFSET {offset} LIMIT {page_size}"
+        query = f"SELECT * FROM c WHERE c.category = @cat OFFSET {offset} LIMIT {page_size}"
         items = list(container.query_items(
             query=query,
             parameters=[{"name": "@cat", "value": category}],

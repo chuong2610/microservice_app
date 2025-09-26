@@ -9,6 +9,14 @@ services:
           - /auth
         strip_path: false
 
+  - name: item-service
+    url: http://host.docker.internal:8081
+    routes:
+      - name: item-route
+        paths:
+          - /items
+        strip_path: false      
+
 plugins:
   - name: rate-limiting
     service: auth-service

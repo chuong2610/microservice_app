@@ -12,12 +12,11 @@ class ItemDTO(BaseModel):
     meta_field: Optional[dict] = None
     createdAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
     updatedAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
-    author_id: str
+    user_id: str
 
 
 class ItemDetailDTO(ItemDTO):
     content: str
-    tags: list[str] = []
     category: list[str] = []
 
 
@@ -29,4 +28,4 @@ class ItemCreateRequest(BaseModel):
     tags: list[str] = []
     category: list[str] = []
     meta_field: Optional[dict] = None
-    author_id: str
+    user_id: str
