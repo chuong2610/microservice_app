@@ -9,17 +9,18 @@ from azure.search.documents import SearchClient
 from dotenv import load_dotenv
 load_dotenv()
 
-def articles_client() -> SearchClient:
+def items_client() -> SearchClient:
     """
-    Create a SearchClient for the articles-index only (simplified implementation).
+    Create a SearchClient for the items-index only (simplified implementation).
     """
-    print("🔧 Creating articles search client...")
+    print("🔧 Creating items search client...")
     try:
-        client = SearchClient(os.getenv('AZURE_SEARCH_ENDPOINT'), "articles-index", AzureKeyCredential(os.getenv('AZURE_SEARCH_KEY')))
-        print(f"✅ Articles client created: articles-index")
+        index_name = os.getenv('SEARCH_ITEM_INDEX_NAME')
+        client = SearchClient(os.getenv('AZURE_SEARCH_ENDPOINT'), index_name, AzureKeyCredential(os.getenv('AZURE_SEARCH_KEY')))
+        print(f"✅ Items client created: {index_name}")
         return client
     except Exception as e:
-        print(f"❌ Failed to create articles client: {e}")
+        print(f"❌ Failed to create items client: {e}")
         raise
 
 def authors_client() -> SearchClient:
@@ -28,8 +29,9 @@ def authors_client() -> SearchClient:
     """
     print("🔧 Creating authors search client...")
     try:
-        client = SearchClient(os.getenv('AZURE_SEARCH_ENDPOINT'), "authors-index", AzureKeyCredential(os.getenv('AZURE_SEARCH_KEY')))
-        print(f"✅ Authors client created: {os.getenv('AZURE_SEARCH_ENDPOINT')}/authors-index")
+        index_name = os.getenv('SEARCH_AUTHOR_INDEX_NAME')
+        client = SearchClient(os.getenv('AZURE_SEARCH_ENDPOINT'), index_name, AzureKeyCredential(os.getenv('AZURE_SEARCH_KEY')))
+        print(f"✅ Authors client created: {os.getenv('AZURE_SEARCH_ENDPOINT')}/{index_name}")
         return client
     except Exception as e:
         print(f"❌ Failed to create authors client: {e}")

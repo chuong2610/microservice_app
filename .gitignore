@@ -302,7 +302,7 @@ temp/
 # -------------------------
 # Project Specific
 # -------------------------
-# Article uploads
+# Items uploads
 uploads/
 article_images/
 user_avatars/
