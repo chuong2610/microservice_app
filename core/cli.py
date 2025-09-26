@@ -90,6 +90,8 @@ def main(argv: list[str] | None = None) -> NoReturn:
 
     raise SystemExit(0)
 
+# python -m core.cli indexes --reset --verbose
+# python -m core.cli indexers --reset --verbose
 
 if __name__ == "__main__":
     main()
