@@ -1,0 +1,12 @@
+azure-search-documents
+python-dotenv
+pydantic
+pydantic_settings
+openai
+pytest
+requests
+azure-cosmos
+fastapi
+uvicorn
+redis
+tzdata

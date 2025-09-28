@@ -1,29 +1,23 @@
+import redis
 from azure.cosmos import CosmosClient
 from settings import settings
 
+# Cosmos DB setup
 client = CosmosClient(settings.COSMOS_ENDPOINT, settings.COSMOS_KEY)
 database = client.create_database_if_not_exists(id=settings.COSMOS_DB_NAME)
 container = database.create_container_if_not_exists(
-    id=settings.COSMOS_CONTAINER_ITEMS,
+    id=settings.COSMOS_CONTAINER_USERS,
     partition_key="/id",
     offer_throughput=400
 )
 
-from redis import Redis
-from settings import settings
-
-
+# Redis client factory
 def create_redis_client():
-    return Redis(
+    """Create and return a Redis client instance"""
+    return redis.Redis(
         host=settings.REDIS_HOST,
         port=settings.REDIS_PORT,
-        password=settings.REDIS_PASSWORD or None,
+        password=settings.REDIS_PASSWORD,
         ssl=settings.REDIS_SSL,
-        ssl_cert_reqs=None if settings.REDIS_SSL else None,
-        db=0,
-        decode_responses=True,
-        socket_connect_timeout=5,
-        socket_timeout=5,
-        retry_on_timeout=True,
-        health_check_interval=30
+        decode_responses=True
     )

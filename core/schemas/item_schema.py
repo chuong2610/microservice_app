@@ -1,7 +1,7 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Any
 from zoneinfo import ZoneInfo
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 
 
 class ItemDTO(BaseModel):
@@ -10,13 +10,13 @@ class ItemDTO(BaseModel):
     abstract: str
     images: list[str] = []
     meta_field: Optional[dict] = None
-    createdAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
-    updatedAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
-    user_id: str
+    createdAt: Optional[datetime] = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
+    updatedAt: Optional[datetime] = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
+    author_id: Optional[str] = None
 
 
 class ItemDetailDTO(ItemDTO):
-    content: str
+    content: Optional[str] = ""
     category: list[str] = []
 
 
@@ -28,4 +28,4 @@ class ItemCreateRequest(BaseModel):
     tags: list[str] = []
     category: list[str] = []
     meta_field: Optional[dict] = None
-    user_id: str
+    author_id: str

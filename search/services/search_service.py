@@ -390,7 +390,7 @@ class SearchService:
                         search_kwargs_temp = search_kwargs.copy()
                         # Apply app_id filter
                         search_kwargs_temp["semantic_configuration_name"] = "items-semantic"
-                        search_kwargs_temp["filter"] = f"app_id eq '{app_id}'"
+                        search_kwargs_temp["filter"] = f"app_id eq '{app_id}'" if app_id else None
                         search_kwargs_temp["highlight_fields"] = search_params.get("highlight_fields", "abstract")
 
                         print(f"Search params: {search_kwargs_temp}")
@@ -405,7 +405,7 @@ class SearchService:
                             search_kwargs_temp = search_kwargs.copy()
                             search_kwargs_temp["query_type"] = "simple"
                             search_kwargs_temp["highlight_fields"] = "abstract"
-                            search_kwargs_temp["filter"] = f"app_id eq '{app_id}'"
+                            search_kwargs_temp["filter"] = f"app_id eq '{app_id}'" if app_id else None
 
                             print(f"Search params: {search_kwargs_temp}")
 
@@ -419,7 +419,7 @@ class SearchService:
                     search_kwargs_temp = search_kwargs.copy()
                     search_kwargs_temp["query_type"] = "simple"
                     search_kwargs_temp["highlight_fields"] = "abstract"
-                    search_kwargs_temp["filter"] = f"app_id eq '{app_id}'"
+                    search_kwargs_temp["filter"] = f"app_id eq '{app_id}'" if app_id else None
 
                     print(f"Search params: {search_kwargs_temp}")
 
@@ -456,7 +456,7 @@ class SearchService:
                 }
 
                 # Apply app_id filter
-                vector_search_kwargs["filter"] = f"app_id eq '{app_id}'"
+                vector_search_kwargs["filter"] = f"app_id eq '{app_id}'" if app_id else None
 
                 print(f"Vector search params: {vector_search_kwargs}")
 
@@ -567,7 +567,7 @@ class SearchService:
             }
             
             # Apply app_id filter
-            search_kwargs["filter"] = f"app_id eq '{app_id}'"
+            search_kwargs["filter"] = f"app_id eq '{app_id}'" if app_id else None
             
             all_results = self.authors.search(**search_kwargs)
             

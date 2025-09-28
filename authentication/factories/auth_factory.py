@@ -1,4 +1,3 @@
-import token
 from repositories.token_repository import TokenRepository
 from repositories.user_repository import UserRepository
 from services.auth_service import AuthService

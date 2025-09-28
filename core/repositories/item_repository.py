@@ -33,21 +33,21 @@ class ItemRepository:
             "total_pages": total_pages
         }
 
-    def get_items_by_author(self, user_id: str, page_number=1, page_size=10):
-        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.userId=@user_id"
+    def get_items_by_author(self, author_id: str, page_number=1, page_size=10):
+        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.author_id=@author_id"
         total_items = list(container.query_items(
             query=count_query,
-            parameters=[{"name": "@user_id", "value": user_id}],
+            parameters=[{"name": "@author_id", "value": author_id}],
             enable_cross_partition_query=True
         ))[0]
 
         total_pages = (total_items + page_size - 1) // page_size
         offset = (page_number - 1) * page_size
 
-        query = f"SELECT * FROM c WHERE c.authorId=@authId OFFSET {offset} LIMIT {page_size}"
+        query = f"SELECT * FROM c WHERE c.author_id=@author_id OFFSET {offset} LIMIT {page_size}"
         items = list(container.query_items(
             query=query,
-            parameters=[{"name": "@user_id", "value": user_id}],
+            parameters=[{"name": "@author_id", "value": author_id}],
             enable_cross_partition_query=True
         ))
 
