@@ -1,5 +1,6 @@
+from math import log
 from fastapi import APIRouter, Depends, Header
-from schemas.user_schema import LoginRequest, BaseResponse, TokenDecodeRequest, TokenRefreshRequest
+from schemas.user_schema import LoginRequest, BaseResponse, LoginWithGoogleRequest, TokenDecodeRequest, TokenRefreshRequest
 from factories.auth_factory import get_auth_service
 
 
@@ -45,6 +46,14 @@ def register(user_data: dict, app_id: str = Header(None)):
         return BaseResponse(status_code=201, data=new_user, message="User registered successfully")
     except Exception as e:
         return BaseResponse(status_code=400, message=str(e))   
+    
+@router.post("/login/google")
+async def login_with_google(login: LoginWithGoogleRequest, app_id: str = Header(None)):
+    try:
+        tokens = await service.login_with_google(login.id_token, app_id)
+        return BaseResponse(status_code=200, data=tokens, message="Login with Google successful")
+    except Exception as e:
+        return BaseResponse(status_code=400, message=str(e))    
 
 @router.get("/health")
 def health_check():

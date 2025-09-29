@@ -1,7 +1,10 @@
 import uuid
 from repositories.token_repository import TokenRepository
 from repositories.user_repository import UserRepository
+from settings import settings
 import utils as auth_utils
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 class AuthService:
     def __init__(self, user_repo: UserRepository, token_repo: TokenRepository):
@@ -42,7 +45,7 @@ class AuthService:
     
     def register(self, user_data: dict, app_id: str = None):
         existing_user = self.user_repo.get_user_by_email(user_data["email"], app_id)
-        if existing_user:
+        if existing_user and existing_user.get("password") != None:
             raise Exception("User already exists")
         hashed_password = auth_utils.hash_password(user_data["password"])
         user_data["password"] = hashed_password
@@ -52,3 +55,36 @@ class AuthService:
         new_user = self.user_repo.create_user(user_data)
         return {"id": new_user["id"], "email": new_user["email"], "role": new_user["role"]}
     
+
+    async def login_with_google(self, id_token_str: str, app_id: str = None):
+        try:
+            CLIENT_ID = settings.GOOGLE_CLIENT_ID  
+            idinfo = id_token.verify_oauth2_token(id_token_str, google_requests.Request(), CLIENT_ID)
+
+            email = idinfo.get("email")
+            if not email:
+                raise ValueError("Token không chứa email hợp lệ")
+
+            user = self.user_repo.get_user_by_email(email, app_id)
+            if not user:
+                user_data = {
+                    "full_name": idinfo.get("name", ""),
+                    "email": email,
+                    "avatar_url": idinfo.get("picture"),
+                    "role": "user"
+                }
+                user = self.user_repo.create_user(user_data, app_id=app_id)
+
+            user_id = user.get("user_id") or user.get("id")
+            token = auth_utils.create_access_token({"sub": {"id": user_id, "role": user.get("role")}, "app_id": app_id})
+
+            return {
+                "access_token": token, 
+                "user_id": user_id, 
+                "role": user.get("role", "user")
+            }
+
+        except ValueError as e:
+            raise ValueError(f"Token không hợp lệ: {str(e)}") from e
+        except Exception as e:
+            raise RuntimeError(f"Lỗi lấy Google user info: {str(e)}") from e

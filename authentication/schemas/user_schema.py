@@ -4,6 +4,9 @@ class LoginRequest(BaseModel):
     email: str
     password: str
 
+class LoginWithGoogleRequest(BaseModel):
+    id_token: str    
+
 class BaseResponse(BaseModel):
     status_code: int
     data: dict
