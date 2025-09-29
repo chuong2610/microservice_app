@@ -11,3 +11,4 @@ uvicorn
 redis
 tzdata
 enum
+azure-storage-blob

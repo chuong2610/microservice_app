@@ -21,6 +21,7 @@ app.add_middleware(
 # Include routes
 app.include_router(router, prefix="/items" , tags=["items"])
 
+
 # Health check endpoint
 @app.get("/health")
 async def health_check():
