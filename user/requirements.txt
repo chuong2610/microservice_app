@@ -1,0 +1,11 @@
+azure-cosmos
+fastapi
+uvicorn[standard]
+redis
+pydantic
+pydantic_settings
+python-dotenv
+email-validator
+python-multipart
+passlib[bcrypt]
+bcrypt==4.3.0

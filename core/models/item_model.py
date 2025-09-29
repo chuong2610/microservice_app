@@ -14,4 +14,4 @@ class Item(BaseModel):
     createdAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
     updatedAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
     status: str = "draft"  
-    user_id: str
+    author_id: str
