@@ -10,3 +10,4 @@ fastapi
 uvicorn
 redis
 tzdata
+enum

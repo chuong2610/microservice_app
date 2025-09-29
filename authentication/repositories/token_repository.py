@@ -11,7 +11,6 @@ class TokenRepository:
             key = f"refresh:{user_info['id']}"
             value = json.dumps({
                 "token": token,
-                "username": user_info.get("username"),
                 "role": user_info.get("role")
             })
             redis_client.setex(key, expire, value)
@@ -34,4 +33,4 @@ class TokenRepository:
             redis_client.delete(f"refresh:{user_id}")
         except (ConnectionError, TimeoutError) as e:
             logger.error(f"Redis connection error when revoking refresh token: {e}")
-            # Don't raise exception for revoke - it's not critical
+                    

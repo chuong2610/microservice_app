@@ -9,19 +9,21 @@ class ItemRepository:
         except Exception:
             return None
     
-    def get_items(self, page_number=1, page_size=10):
-        count_query = "SELECT VALUE COUNT(1) FROM c"
+    def get_items(self, page_number=1, page_size=10, app_id: str = None):
+        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.status != 'deleted' and c.app_id=@app_id" 
         total_items = list(container.query_items(
             query=count_query,
+            parameters=[{"name": "@app_id", "value": app_id}],
             enable_cross_partition_query=True
         ))[0]
 
         total_pages = (total_items + page_size - 1) // page_size
         offset = (page_number - 1) * page_size
 
-        query = f"SELECT * FROM c OFFSET {offset} LIMIT {page_size}"
+        query = f"SELECT * FROM c OFFSET {offset} LIMIT {page_size} WHERE c.status != 'deleted' and c.app_id=@app_id"
         items = list(container.query_items(
             query=query,
+            parameters=[{"name": "@app_id", "value": app_id}],
             enable_cross_partition_query=True
         ))
 
@@ -33,21 +35,21 @@ class ItemRepository:
             "total_pages": total_pages
         }
 
-    def get_items_by_author(self, author_id: str, page_number=1, page_size=10):
-        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.author_id=@author_id"
+    def get_items_by_author(self, author_id: str, page_number=1, page_size=10, app_id: str = None):
+        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.author_id=@author_id and c.app_id=@app_id"
         total_items = list(container.query_items(
             query=count_query,
-            parameters=[{"name": "@author_id", "value": author_id}],
+            parameters=[{"name": "@author_id", "value": author_id} ,{"name": "@app_id", "value": app_id}],
             enable_cross_partition_query=True
         ))[0]
 
         total_pages = (total_items + page_size - 1) // page_size
         offset = (page_number - 1) * page_size
 
-        query = f"SELECT * FROM c WHERE c.author_id=@author_id OFFSET {offset} LIMIT {page_size}"
+        query = f"SELECT * FROM c WHERE c.author_id=@author_id OFFSET {offset} LIMIT {page_size} and c.app_id=@app_id"
         items = list(container.query_items(
             query=query,
-            parameters=[{"name": "@author_id", "value": author_id}],
+            parameters=[{"name": "@author_id", "value": author_id}, {"name": "@app_id", "value": app_id}],
             enable_cross_partition_query=True
         ))
 
@@ -59,21 +61,21 @@ class ItemRepository:
             "total_pages": total_pages
         }
     
-    def get_items_by_category(self, category: str, page_number=1, page_size=10):
-        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.category = @cat"
+    def get_items_by_category(self, category: str, page_number=1, page_size=10 , app_id: str = None):
+        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.category = @cat and c.app_id=@app_id"
         total_items = list(container.query_items(
             query=count_query,
-            parameters=[{"name": "@cat", "value": category}],
+            parameters=[{"name": "@cat", "value": category}, {"name": "@app_id", "value": app_id}],
             enable_cross_partition_query=True
         ))[0]
 
         total_pages = (total_items + page_size - 1) // page_size
         offset = (page_number - 1) * page_size
 
-        query = f"SELECT * FROM c WHERE c.category = @cat OFFSET {offset} LIMIT {page_size}"
+        query = f"SELECT * FROM c WHERE c.category = @cat OFFSET {offset} LIMIT {page_size} and c.app_id=@app_id"
         items = list(container.query_items(
             query=query,
-            parameters=[{"name": "@cat", "value": category}],
+            parameters=[{"name": "@cat", "value": category}, {"name": "@app_id", "value": app_id}],
             enable_cross_partition_query=True
         ))
 

@@ -9,7 +9,7 @@ services:
           - /auth
         strip_path: false
 
-  - name: item-service
+  - name: core-service
     url: http://host.docker.internal:8081
     routes:
       - name: item-route

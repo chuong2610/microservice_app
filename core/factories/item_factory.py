@@ -1,5 +1,6 @@
 from repositories.item_repository import ItemRepository
 from services.item_service import ItemService
+from db.redis_client import create_redis_client
 
 
 class ItemServiceFactory:
@@ -10,7 +11,6 @@ class ItemServiceFactory:
         # Try to create Redis client, but don't fail if it's unavailable
         redis_client = None
         try:
-            from db.database import create_redis_client
             redis_client = create_redis_client()
             redis_client.ping()  # Test connection
         except:

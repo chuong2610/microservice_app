@@ -12,14 +12,12 @@ class ItemService:
         self.redis = redis_client
     
     def _cache_get(self, key):
-        """Get from cache, return None if Redis unavailable"""
         try:
             return self.redis.get(key) if self.redis else None
         except:
             return None
     
     def _cache_set(self, key, value, ttl=300):
-        """Set cache, ignore if Redis unavailable"""
         try:
             if self.redis:
                 self.redis.set(key, json.dumps(value, default=str), ex=ttl)
@@ -27,7 +25,6 @@ class ItemService:
             pass
     
     def _cache_delete(self, pattern):
-        """Delete cache keys, ignore if Redis unavailable"""
         try:
             if self.redis:
                 keys = self.redis.keys(pattern)
@@ -42,13 +39,13 @@ class ItemService:
             return self.map_item_to_detail_dto(item)
         return None
 
-    def get_items(self, page_number=1, page_size=10):
-        cache_key = f"items:page:{page_number}:size:{page_size}"
+    def get_items(self, page_number=1, page_size=10, app_id: str = None):
+        cache_key = f"items:page:{page_number}:size:{page_size}:app_id:{app_id}"
         cached = self._cache_get(cache_key)
         if cached:
             return json.loads(cached)
-        
-        data = self.item_repository.get_items(page_number, page_size)
+
+        data = self.item_repository.get_items(page_number, page_size, app_id=app_id)
         data['items'] = self.map_items_to_dto(data.get("items", []))
         
         # Cache serializable version
@@ -57,14 +54,14 @@ class ItemService:
         self._cache_set(cache_key, cache_data)
         
         return data
-    
-    def get_items_by_author(self, author_id: str, page_number=1, page_size=10):
+
+    def get_items_by_author(self, author_id: str, page_number=1, page_size=10, app_id: str = None):
         cache_key = f"items:author:{author_id}:page:{page_number}:size:{page_size}"
         cached = self._cache_get(cache_key)
         if cached:
             return json.loads(cached)
         
-        data = self.item_repository.get_items_by_author(author_id, page_number, page_size)
+        data = self.item_repository.get_items_by_author(author_id, page_number, page_size , app_id=app_id)
         data['items'] = self.map_items_to_dto(data.get("items", []))
         
         # Cache serializable version
@@ -74,13 +71,13 @@ class ItemService:
         
         return data
     
-    def get_items_by_category(self, category: str, page_number=1, page_size=10):
-        cache_key = f"items:category:{category}:page:{page_number}:size:{page_size}"
+    def get_items_by_category(self, category: str, page_number=1, page_size=10 , app_id: str = None):
+        cache_key = f"items:category:{category}:page:{page_number}:size:{page_size}:app_id:{app_id}"
         cached = self._cache_get(cache_key)
         if cached:
             return json.loads(cached)
-        
-        data = self.item_repository.get_items_by_category(category, page_number, page_size)
+
+        data = self.item_repository.get_items_by_category(category, page_number, page_size, app_id=app_id)
         data['items'] = self.map_items_to_dto(data.get("items", []))
         
         # Cache serializable version
