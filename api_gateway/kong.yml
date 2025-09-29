@@ -15,8 +15,24 @@ services:
       - name: item-route
         paths:
           - /items
-        strip_path: false      
+        strip_path: false  
 
+  - name: search-service
+    url: http://host.docker.internal:8082
+    routes:
+      - name: search-route
+        paths:
+          - /search
+        strip_path: false          
+
+  - name: user-service
+    url: http://host.docker.internal:8083
+    routes:
+      - name: user-route
+        paths:
+          - /users
+        strip_path: false
+          
 plugins:
   - name: rate-limiting
     service: auth-service

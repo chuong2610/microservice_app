@@ -19,7 +19,7 @@ app.add_middleware(
 )
 
 # Include routes
-app.include_router(search, prefix="/api/v1", tags=["search"])
+app.include_router(search,  tags=["search"])
 
 # Health check endpoint
 @app.get("/health")
