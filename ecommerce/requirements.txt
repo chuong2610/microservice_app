@@ -1,0 +1,7 @@
+python-dotenv
+pydantic
+pydantic_settings
+azure-cosmos
+fastapi
+uvicorn
+pydantic
