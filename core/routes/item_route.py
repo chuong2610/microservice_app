@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from enums.role_enum import RoleEnum
 from factories.item_factory import ItemServiceFactory
 from schemas.base_response import BaseResponse
@@ -10,7 +10,7 @@ router = APIRouter()
 item_service = ItemServiceFactory.create()
 
 @router.get("")
-def get_items(page_number: int = 1, page_size: int = 10, app_id: str = None):
+def get_items(page_number: int = 1, page_size: int = 10, app_id: str = Header(None)):
     try:
         items = item_service.get_items(page_number, page_size, app_id=app_id)
         return BaseResponse(status_code=200, message="Items retrieved successfully", data=items)
@@ -34,7 +34,7 @@ def get_item_by_id(item_id: str):
 
 
 @router.get("/author/{author_id}")
-def get_items_by_author(author_id: str, page_number: int = 1, page_size: int = 10, app_id: str = None):
+def get_items_by_author(author_id: str, page_number: int = 1, page_size: int = 10, app_id: str = Header(None)):
     try:
         items = item_service.get_items_by_author(author_id, page_number, page_size, app_id=app_id)
         return BaseResponse(status_code=200, message="Items retrieved successfully", data=items)
@@ -42,7 +42,7 @@ def get_items_by_author(author_id: str, page_number: int = 1, page_size: int = 1
         return BaseResponse(status_code=500, message=str(e), data=None)
         
 @router.get("/category/{category}")
-def get_items_by_category(category: str, page_number: int = 1, page_size: int = 10, app_id: str = None):
+def get_items_by_category(category: str, page_number: int = 1, page_size: int = 10, app_id: str = Header(None)):
     try:
         items = item_service.get_items_by_category(category, page_number, page_size, app_id=app_id)
         return BaseResponse(status_code=200, message="Items retrieved successfully", data=items)

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from schemas.user_schema import LoginRequest, BaseResponse, TokenDecodeRequest, TokenRefreshRequest
 from factories.auth_factory import get_auth_service
 
@@ -7,7 +7,7 @@ router = APIRouter()
 service = get_auth_service()
 
 @router.post("/login")
-def login(user: LoginRequest, app_id: str = None):
+def login(user: LoginRequest, app_id: str =  Header(None)):
     try:
         tokens = service.login(user.email, user.password, app_id)
         return BaseResponse(status_code=200, data=tokens, message="Login successful")
@@ -15,7 +15,7 @@ def login(user: LoginRequest, app_id: str = None):
         return BaseResponse(status_code=401, message=str(e))
 
 @router.post("/decode-token")
-def decode_token(token_request: TokenDecodeRequest, app_id: str = None):
+def decode_token(token_request: TokenDecodeRequest, app_id: str =  Header(None)):
     try:
         payload = service.decode_token(token_request.token, app_id)
         return BaseResponse(status_code=200, data=payload, message="Token decoded successfully")
@@ -23,7 +23,7 @@ def decode_token(token_request: TokenDecodeRequest, app_id: str = None):
         return BaseResponse(status_code=400, message=str(e))
 
 @router.post("/refresh")
-def refresh_token(request: TokenRefreshRequest, app_id: str = None):
+def refresh_token(request: TokenRefreshRequest, app_id: str =  Header(None)):
     try:
         tokens = service.refresh(request.user_id, request.refresh_token, app_id)
         return BaseResponse(status_code=200, data=tokens, message="Token refreshed successfully")
@@ -39,7 +39,7 @@ def logout(user_id: str):
         return BaseResponse(status_code=400, message=str(e))
     
 @router.post("/register")
-def register(user_data: dict, app_id: str = None):
+def register(user_data: dict, app_id: str = Header(None)):
     try:
         new_user = service.register(user_data, app_id)
         return BaseResponse(status_code=201, data=new_user, message="User registered successfully")
