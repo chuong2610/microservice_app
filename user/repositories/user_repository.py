@@ -3,10 +3,13 @@ from db.database import container
 
 
 class UserRepository:
-    def get_user_by_id(self, user_id: str) -> Optional[dict]:
+    def get_user_by_id(self, user_id: str, app_id: str = None) -> Optional[dict]:
         """Get a user by ID"""
         try:
             user = container.read_item(item=user_id, partition_key=user_id)
+            # Filter by app_id if provided
+            if app_id and user.get('app_id') != app_id:
+                return None
             return user
         except Exception:
             return None
@@ -27,12 +30,23 @@ class UserRepository:
         except Exception:
             return None
 
-    def get_users(self, page_number: int = 1, page_size: int = 10) -> dict:
+    def get_users(self, page_number: int = 1, page_size: int = 10, app_id: str = None) -> dict:
         """Get paginated list of users"""
+        # Build query conditions
+        where_conditions = ["c.is_active = true"]
+        parameters = []
+        
+        if app_id:
+            where_conditions.append("c.app_id = @app_id")
+            parameters.append({"name": "@app_id", "value": app_id})
+        
+        where_clause = " AND ".join(where_conditions)
+        
         # Count total users
-        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.is_active = true"
+        count_query = f"SELECT VALUE COUNT(1) FROM c WHERE {where_clause}"
         total_users = list(container.query_items(
             query=count_query,
+            parameters=parameters,
             enable_cross_partition_query=True
         ))[0]
 
@@ -40,9 +54,10 @@ class UserRepository:
         offset = (page_number - 1) * page_size
 
         # Get users with pagination, only active users
-        query = f"SELECT * FROM c WHERE c.is_active = true OFFSET {offset} LIMIT {page_size}"
+        query = f"SELECT * FROM c WHERE {where_clause} OFFSET {offset} LIMIT {page_size}"
         users = list(container.query_items(
             query=query,
+            parameters=parameters,
             enable_cross_partition_query=True
         ))
 

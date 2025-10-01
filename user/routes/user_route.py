@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, HTTPException, Query, Depends, Header
 from typing import Optional
 
 from factories.user_factory import UserServiceFactory
@@ -14,18 +14,21 @@ router = APIRouter()
 user_service = UserServiceFactory.create()
 
 
-@router.get("/users/{user_id}")
-def get_user_by_id(user_id: str):
+@router.get("/{user_id}")
+def get_user_by_id(user_id: str, app_id: str = Header(None, convert_underscores=False)):
     """Get a user by ID"""
     try:
-        user = user_service.get_user_by_id(user_id)
+        print(f"[DEBUG] get_user_by_id called with user_id: {user_id}, app_id: {app_id}")
+        user = user_service.get_user_by_id(user_id, app_id=app_id)
         if user:
+            print(f"[DEBUG] User found: {user.full_name if hasattr(user, 'full_name') else 'Unknown'}")
             return BaseResponse(
                 status_code=200, 
                 message="User retrieved successfully", 
                 data=user.model_dump()
             )
         else:
+            print(f"[DEBUG] User not found for user_id: {user_id}, app_id: {app_id}")
             return BaseResponse(
                 status_code=404, 
                 message="User not found", 
@@ -39,14 +42,15 @@ def get_user_by_id(user_id: str):
         )
 
 
-@router.get("/users")
+@router.get("")
 def get_users(
     page_number: int = Query(1, ge=1, description="Page number"), 
-    page_size: int = Query(10, ge=1, le=100, description="Page size")
+    page_size: int = Query(10, ge=1, le=100, description="Page size"),
+    app_id: str = Header(None, convert_underscores=False)
 ):
     """Get paginated list of users"""
     try:
-        users = user_service.get_users(page_number, page_size)
+        users = user_service.get_users(page_number, page_size, app_id=app_id)
         return BaseResponse(
             status_code=200, 
             message="Users retrieved successfully", 
@@ -60,7 +64,7 @@ def get_users(
         )
 
 
-@router.post("/users")
+@router.post("")
 def create_user(user_request: UserCreateRequest):
     """Create a new user"""
     try:
@@ -84,7 +88,7 @@ def create_user(user_request: UserCreateRequest):
         )
 
 
-@router.put("/users/{user_id}")
+@router.put("/{user_id}")
 def update_user(user_id: str, update_request: UserUpdateRequest):
     """Update user information"""
     try:
@@ -119,7 +123,7 @@ def update_user(user_id: str, update_request: UserUpdateRequest):
         )
 
 
-@router.put("/users/{user_id}/deactivate")
+@router.put("/{user_id}/deactivate")
 def deactivate_user(user_id: str):
     """Deactivate a user (soft delete)"""
     try:
@@ -144,7 +148,7 @@ def deactivate_user(user_id: str):
         )
 
 
-@router.put("/users/{user_id}/activate")
+@router.put("/{user_id}/activate")
 def activate_user(user_id: str):
     """Activate a user"""
     try:
@@ -169,7 +173,7 @@ def activate_user(user_id: str):
         )
 
 
-@router.delete("/users/{user_id}")
+@router.delete("/{user_id}")
 def delete_user(user_id: str):
     """Hard delete a user"""
     try:

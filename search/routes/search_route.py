@@ -1,6 +1,6 @@
 
 from typing import Optional
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Header
 from fastapi.responses import JSONResponse
 
 from search.clients import items_client, authors_client
@@ -20,7 +20,7 @@ def search_all(
     k: int = Query(10, ge=1, le=100),
     page_index: Optional[int] = Query(None, ge=0),
     page_size: Optional[int] = Query(None, ge=1, le=100),
-    app_id: Optional[str] = Query(None)
+    app_id: Optional[str] = Header(None, convert_underscores=False)
 ):
     try:
         svc = _get_service()
@@ -36,13 +36,19 @@ def search_items(
     k: int = Query(10, ge=1, le=100),
     page_index: Optional[int] = Query(None, ge=0),
     page_size: Optional[int] = Query(None, ge=1, le=100),
-    app_id: Optional[str] = Query(None)
+    app_id: Optional[str] = Header(None, convert_underscores=False)
 ):
     try:
+        print(f"[DEBUG] search_items called with q='{q}', k={k}, page_index={page_index}, page_size={page_size}, app_id={app_id}")
         svc = _get_service()
+        print(f"[DEBUG] SearchService created successfully")
         result = svc.search_items(q, k=k, page_index=page_index, page_size=page_size, app_id=app_id)
+        print(f"[DEBUG] search_items completed successfully, result type: {type(result)}")
         return JSONResponse(result)
     except Exception as e:
+        print(f"[ERROR] search_items failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
@@ -52,7 +58,7 @@ def search_authors(
     k: int = Query(10, ge=1, le=100),
     page_index: Optional[int] = Query(None, ge=0),
     page_size: Optional[int] = Query(None, ge=1, le=100),
-    app_id: Optional[str] = Query(None)
+    app_id: Optional[str] = Header(None, convert_underscores=False)
 ):
     try:
         svc = _get_service()

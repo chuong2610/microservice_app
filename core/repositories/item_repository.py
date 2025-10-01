@@ -10,22 +10,39 @@ class ItemRepository:
             return None
     
     def get_items(self, page_number=1, page_size=10, app_id: str = None):
-        count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.status != 'deleted' and c.app_id=@app_id" 
-        total_items = list(container.query_items(
-            query=count_query,
-            parameters=[{"name": "@app_id", "value": app_id}],
-            enable_cross_partition_query=True
-        ))[0]
+        # Handle null app_id case
+        if app_id is None:
+            count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.status != 'deleted'"
+            total_items = list(container.query_items(
+                query=count_query,
+                enable_cross_partition_query=True
+            ))[0]
 
-        total_pages = (total_items + page_size - 1) // page_size
-        offset = (page_number - 1) * page_size
+            total_pages = (total_items + page_size - 1) // page_size
+            offset = (page_number - 1) * page_size
 
-        query = f"SELECT * FROM c OFFSET {offset} LIMIT {page_size} WHERE c.status != 'deleted' and c.app_id=@app_id"
-        items = list(container.query_items(
-            query=query,
-            parameters=[{"name": "@app_id", "value": app_id}],
-            enable_cross_partition_query=True
-        ))
+            query = f"SELECT * FROM c WHERE c.status != 'deleted' OFFSET {offset} LIMIT {page_size}"
+            items = list(container.query_items(
+                query=query,
+                enable_cross_partition_query=True
+            ))
+        else:
+            count_query = "SELECT VALUE COUNT(1) FROM c WHERE c.status != 'deleted' and c.app_id=@app_id" 
+            total_items = list(container.query_items(
+                query=count_query,
+                parameters=[{"name": "@app_id", "value": app_id}],
+                enable_cross_partition_query=True
+            ))[0]
+
+            total_pages = (total_items + page_size - 1) // page_size
+            offset = (page_number - 1) * page_size
+
+            query = f"SELECT * FROM c WHERE c.status != 'deleted' and c.app_id=@app_id ORDER BY c.created_at DESC OFFSET {offset} LIMIT {page_size}"
+            items = list(container.query_items(
+                query=query,
+                parameters=[{"name": "@app_id", "value": app_id}],
+                enable_cross_partition_query=True
+            ))
 
         return {
             "items": items,
@@ -46,7 +63,7 @@ class ItemRepository:
         total_pages = (total_items + page_size - 1) // page_size
         offset = (page_number - 1) * page_size
 
-        query = f"SELECT * FROM c WHERE c.author_id=@author_id OFFSET {offset} LIMIT {page_size} and c.app_id=@app_id"
+        query = f"SELECT * FROM c WHERE c.author_id=@author_id and c.app_id=@app_id ORDER BY c.created_at DESC OFFSET {offset} LIMIT {page_size}"
         items = list(container.query_items(
             query=query,
             parameters=[{"name": "@author_id", "value": author_id}, {"name": "@app_id", "value": app_id}],
@@ -72,7 +89,7 @@ class ItemRepository:
         total_pages = (total_items + page_size - 1) // page_size
         offset = (page_number - 1) * page_size
 
-        query = f"SELECT * FROM c WHERE c.category = @cat OFFSET {offset} LIMIT {page_size} and c.app_id=@app_id"
+        query = f"SELECT * FROM c WHERE c.category = @cat and c.app_id=@app_id ORDER BY c.created_at DESC OFFSET {offset} LIMIT {page_size}"
         items = list(container.query_items(
             query=query,
             parameters=[{"name": "@cat", "value": category}, {"name": "@app_id", "value": app_id}],

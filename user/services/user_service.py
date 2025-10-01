@@ -17,16 +17,16 @@ class UserService:
         self.user_repository = user_repository
         self.redis = redis
 
-    def get_user_by_id(self, user_id: str) -> Optional[UserDetailDTO]:
+    def get_user_by_id(self, user_id: str, app_id: str = None) -> Optional[UserDetailDTO]:
         """Get a user by ID"""
-        user = self.user_repository.get_user_by_id(user_id)
+        user = self.user_repository.get_user_by_id(user_id, app_id=app_id)
         if user:
             return self.map_user_to_detail_dto(user)
         return None
 
-    def get_users(self, page_number: int = 1, page_size: int = 10) -> dict:
+    def get_users(self, page_number: int = 1, page_size: int = 10, app_id: str = None) -> dict:
         """Get paginated list of users"""
-        redis_key = f"users:page:{page_number}:size:{page_size}"
+        redis_key = f"users:page:{page_number}:size:{page_size}:app:{app_id}"
         
         # Try to get from cache, but continue if Redis is down
         try:
@@ -37,7 +37,7 @@ class UserService:
             print(f"Redis error (continuing without cache): {e}")
             # Continue without caching
 
-        data = self.user_repository.get_users(page_number, page_size)
+        data = self.user_repository.get_users(page_number, page_size, app_id=app_id)
         data['users'] = self.map_users_to_dto(data.get("users", []))
         
         # Convert Pydantic models to dictionaries for JSON serialization

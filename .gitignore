@@ -6,6 +6,8 @@ frontend/env.news
 frontend/env.tech
 frontend/env.example
 test/
+*.json
+search_gcp/
 
 # -------------------------
 # Python

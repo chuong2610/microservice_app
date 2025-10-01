@@ -22,7 +22,7 @@ app.add_middleware(
 app.include_router(search,  tags=["search"])
 
 # Health check endpoint
-@app.get("/health")
+@app.get("/search/health")
 async def health_check():
     return {"status": "healthy", "service": "search-service"}
 

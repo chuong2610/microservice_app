@@ -11,7 +11,7 @@ class Item(BaseModel):
     tags: list[str] = []
     category: str
     meta_field: dict
-    createdAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
-    updatedAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
+    created_at: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
+    updated_at: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
     status: str = "draft"  
     author_id: str

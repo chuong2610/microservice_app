@@ -41,10 +41,15 @@ class ItemService:
 
     def get_items(self, page_number=1, page_size=10, app_id: str = None):
         cache_key = f"items:page:{page_number}:size:{page_size}:app_id:{app_id}"
+        print(f"[REDIS DEBUG] Checking cache for key: {cache_key}")
         cached = self._cache_get(cache_key)
+
+        # turn off the cache for temprary testing
         if cached:
+            print(f"[REDIS DEBUG] Cache HIT - Returning cached data for: {cache_key}")
             return json.loads(cached)
 
+        print(f"[REDIS DEBUG] Cache MISS - Fetching from database for: {cache_key}")
         data = self.item_repository.get_items(page_number, page_size, app_id=app_id)
         data['items'] = self.map_items_to_dto(data.get("items", []))
         
@@ -52,11 +57,12 @@ class ItemService:
         cache_data = data.copy()
         cache_data['items'] = [item.model_dump() for item in cache_data['items']]
         self._cache_set(cache_key, cache_data)
+        print(f"[REDIS DEBUG] Data cached for key: {cache_key}")
         
         return data
 
     def get_items_by_author(self, author_id: str, page_number=1, page_size=10, app_id: str = None):
-        cache_key = f"items:author:{author_id}:page:{page_number}:size:{page_size}"
+        cache_key = f"items:author:{author_id}:page:{page_number}:size:{page_size}:app_id:{app_id}"
         cached = self._cache_get(cache_key)
         if cached:
             return json.loads(cached)
@@ -131,8 +137,53 @@ class ItemService:
                 self._cache_delete(f"items:category:{item['category']}:*")
         return success
 
+    def _process_item_data(self, item: dict):
+        """Process item data to handle image/images compatibility and author_name"""
+        processed_item = item.copy()
+        
+        # Handle image/images compatibility
+        if 'images' not in processed_item or not processed_item['images']:
+            if 'image' in processed_item and processed_item['image']:
+                processed_item['images'] = [processed_item['image']]
+            else:
+                processed_item['images'] = []
+        
+        # Add author_name (for now, use a placeholder - later we can fetch from user service)
+        if 'author_name' not in processed_item:
+            processed_item['author_name'] = f"Author {processed_item.get('author_id', 'Unknown')[:8]}"
+        
+        return processed_item
+
     def map_item_to_detail_dto(self, item: dict):
-        return ItemDetailDTO(**item)    
+        processed_item = self._process_item_data(item)
+        return ItemDetailDTO(**processed_item)    
     
     def map_items_to_dto(self, items: list[dict]):
-        return [ItemDTO(**item) for item in items]
+        return [ItemDTO(**self._process_item_data(item)) for item in items]
+    
+    def increment_views(self, item_id: str) -> bool:
+        """Increment the view count for an item"""
+        try:
+            # Get the current item
+            item = self.item_repo.get_item_by_id(item_id)
+            if not item:
+                return False
+            
+            # Initialize or increment views in meta_field
+            if not item.get('meta_field'):
+                item['meta_field'] = {}
+            
+            current_views = item['meta_field'].get('views', 0)
+            item['meta_field']['views'] = current_views + 1
+            
+            # Update the item
+            success = self.item_repo.update_item(item_id, item)
+            
+            # Clear cache for this item
+            cache_key = f"item:{item_id}"
+            self.redis.delete(cache_key)
+            
+            return success
+        except Exception as e:
+            print(f"Error incrementing views for item {item_id}: {e}")
+            return False

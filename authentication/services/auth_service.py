@@ -20,7 +20,23 @@ class AuthService:
         access_token = auth_utils.create_access_token(payload)
         refresh_token = auth_utils.create_refresh_token(payload)
         self.token_repo.save_refresh_token(user, refresh_token)
-        return {"access_token": access_token, "refresh_token": refresh_token}
+        
+        # Return user data along with tokens for frontend display
+        user_data = {
+            "id": user["id"],
+            "email": user["email"],
+            "full_name": user.get("full_name"),
+            "role": user.get("role", "user"),
+            "avatar_url": user.get("avatar_url"),
+            "is_active": user.get("is_active", True),
+            "created_at": user.get("created_at")
+        }
+        
+        return {
+            "access_token": access_token, 
+            "refresh_token": refresh_token,
+            "user": user_data
+        }
     
     def decode_token(self, token: str, app_id: str = None):
         payload = auth_utils.decode_token(token)
@@ -30,14 +46,18 @@ class AuthService:
 
     def refresh(self, user_id: str, refresh_token: str, app_id: str = None):
         user = self.user_repo.get_user_by_id(user_id, app_id)
+        if not user:
+            raise Exception("User not found")
         stored = self.token_repo.get_refresh_token(user_id)
         if not stored or stored["token"] != refresh_token:
             raise Exception("Invalid refresh token")
         payload = auth_utils.decode_token(refresh_token)
+        if payload.get("app_id") != app_id:
+            raise Exception("Token app_id mismatch")
         new_access_token = auth_utils.create_access_token(payload)
-        refresh_token = auth_utils.create_refresh_token(payload)
-        self.token_repo.save_refresh_token(user, refresh_token)
-        return {"access_token": new_access_token, "refresh_token": refresh_token}
+        new_refresh_token = auth_utils.create_refresh_token(payload)
+        self.token_repo.save_refresh_token(user, new_refresh_token)
+        return {"access_token": new_access_token, "refresh_token": new_refresh_token}
 
     def logout(self, user_id: str):
         self.token_repo.revoke_refresh_token(user_id)
@@ -49,7 +69,7 @@ class AuthService:
             raise Exception("User already exists")
         hashed_password = auth_utils.hash_password(user_data["password"])
         user_data["password"] = hashed_password
-        user_data["role"] = "user"  # Default role
+        user_data["role"] = user_data.get("role", "user")
         user_data["id"] = str(uuid.uuid4())  
         user_data["app_id"] = app_id
         new_user = self.user_repo.create_user(user_data)
@@ -68,12 +88,14 @@ class AuthService:
             user = self.user_repo.get_user_by_email(email, app_id)
             if not user:
                 user_data = {
+                    "id": str(uuid.uuid4()),
                     "full_name": idinfo.get("name", ""),
                     "email": email,
                     "avatar_url": idinfo.get("picture"),
-                    "role": "user"
+                    "role": "user",
+                    "app_id": app_id
                 }
-                user = self.user_repo.create_user(user_data, app_id=app_id)
+                user = self.user_repo.create_user(user_data)
 
             user_id = user.get("user_id") or user.get("id")
             token = auth_utils.create_access_token({"sub": {"id": user_id, "role": user.get("role")}, "app_id": app_id})

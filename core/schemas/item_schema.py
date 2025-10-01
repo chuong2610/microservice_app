@@ -10,9 +10,12 @@ class ItemDTO(BaseModel):
     abstract: str
     images: list[str] = []
     meta_field: Optional[dict] = None
-    createdAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
-    updatedAt: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
+    created_at: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
+    updated_at: datetime = datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
+    status: str = "draft"
     author_id: str
+    author_name: Optional[str] = None
+    app_id: str
 
 
 class ItemDetailDTO(ItemDTO):
