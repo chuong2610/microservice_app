@@ -34,12 +34,12 @@ services:
         strip_path: false
           
 plugins:
-  - name: rate-limiting
-    service: auth-service
-    config:
-      minute: 5
-      hour: 1000
-      policy: local
+  # - name: rate-limiting
+  #   service: auth-service
+  #   config:
+  #     minute: 5
+  #     hour: 1000
+  #     policy: local
 
   - name: cors
     config:
