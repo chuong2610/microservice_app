@@ -1,0 +1,17 @@
+# Cosmos DB Configuration
+COSMOS_ENDPOINT=https://localhost:8081
+COSMOS_KEY=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==
+COSMOS_DB_NAME=microservicedb
+COSMOS_CONTAINER_ITEMS=items
+COSMOS_CONTAINER_AUTHORS=authors
+
+# Redis Configuration
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_SSL=false
+
+# Service URLs
+AUTHENTICATION_SERVICE_URL=http://localhost:8001
+
+

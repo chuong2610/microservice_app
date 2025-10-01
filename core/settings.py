@@ -6,6 +6,7 @@ import os
 load_dotenv()
 
 class Settings(BaseSettings):
+    # -------------------
     # Redis
     # -------------------
     REDIS_HOST: str = os.getenv("REDIS_HOST", "localhost")

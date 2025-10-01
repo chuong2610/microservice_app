@@ -135,17 +135,20 @@ class SearchService:
         print(f"📖 Items search: '{query}'")
         
         normalized_query = query
+        plan = None  # Initialize plan variable
+        
         if self.llm_service and len(query.split()) >= 5:
             try:
                 system_prompt = prompts.SYSTEM_PROMPT_PLANNING_SIMPLE
                 user_prompt = prompts.USER_PROMPT_PLANNING_SIMPLE.format(user_query=query)
-                plan = self.llm_service.chat(system_prompt, user_prompt)
-                plan = json.loads(plan)
+                plan_response = self.llm_service.chat(system_prompt, user_prompt)
+                plan = json.loads(plan_response)
                 
                 normalized_query = plan.get("normalized_query", query)
                 print(f"✅ Query normalized: '{query}' -> '{normalized_query}'")
             except Exception as e:
                 print(f"⚠️ LLM normalization failed: {e}, using original query")
+                plan = None
         else:
             if not self.llm_service:
                 print("⚠️ LLM service not available, using original query")
@@ -162,17 +165,20 @@ class SearchService:
         print(f"👤 Authors search: '{query}'")
         
         normalized_query = query
+        plan = None  # Initialize plan variable
+        
         if self.llm_service and len(query.split()) >= 5:
             try:
                 system_prompt = prompts.SYSTEM_PROMPT_PLANNING_SIMPLE
                 user_prompt = prompts.USER_PROMPT_PLANNING_SIMPLE.format(user_query=query)
-                plan = self.llm_service.chat(system_prompt, user_prompt)
-                plan = json.loads(plan)
+                plan_response = self.llm_service.chat(system_prompt, user_prompt)
+                plan = json.loads(plan_response)
                 
                 normalized_query = plan.get("normalized_query", query)
                 print(f"✅ Query normalized: '{query}' -> '{normalized_query}'")
             except Exception as e:
                 print(f"⚠️ LLM normalization failed: {e}, using original query")
+                plan = None
         else:
             if not self.llm_service:
                 print("⚠️ LLM service not available, using original query")
@@ -263,11 +269,15 @@ class SearchService:
                     print(f"⚠️ Failed to retrieve document {doc_id}: {individual_error}")
             return doc_dict
 
-    def _search_authors_planned(self, original_query: str, plan: Dict[str, Any], k: int = 10, page_index: Optional[int] = None, page_size: Optional[int] = None, app_id: str = None) -> Dict[str, Any]:
+    def _search_authors_planned(self, original_query: str, plan: Optional[Dict[str, Any]], k: int = 10, page_index: Optional[int] = None, page_size: Optional[int] = None, app_id: str = None) -> Dict[str, Any]:
         """
         Internal authors search function that uses pre-planned query data.
         """
-        normalized_query = plan["normalized_query"]
+        # Handle case where plan is None (LLM not available or query too short)
+        if plan is None:
+            normalized_query = original_query
+        else:
+            normalized_query = plan["normalized_query"]
         
         # Handle pagination parameters
         if page_index is not None and page_size is not None:
@@ -351,12 +361,22 @@ class SearchService:
             print(f"❌ Authors search failed: {e}")
             raise
     
-    def _search_items_planned(self, original_query: str, plan: Dict[str, Any], k: int = 10, page_index: Optional[int] = None, page_size: Optional[int] = None, app_id: str = None) -> Dict[str, Any]:
+    def _search_items_planned(self, original_query: str, plan: Optional[Dict[str, Any]], k: int = 10, page_index: Optional[int] = None, page_size: Optional[int] = None, app_id: str = None) -> Dict[str, Any]:
         """
         Internal items search function that uses pre-planned query data.
         """
-        normalized_query = plan["normalized_query"]
-        search_params = plan["search_parameters"]
+        # Handle case where plan is None (LLM not available or query too short)
+        if plan is None:
+            normalized_query = original_query
+            search_params = {
+                "semantic_weight": 0.3,
+                "bm25_weight": 0.4,
+                "vector_weight": 0.2,
+                "business_weight": 0.1
+            }
+        else:
+            normalized_query = plan["normalized_query"]
+            search_params = plan["search_parameters"]
         
         # Handle pagination parameters
         if page_index is not None and page_size is not None:

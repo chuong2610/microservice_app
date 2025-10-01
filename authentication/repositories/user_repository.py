@@ -15,4 +15,4 @@ class UserRepository:
     
     def create_user(self, user: dict):
         container.create_item(body=user)
-        return user.dict()
+        return user
