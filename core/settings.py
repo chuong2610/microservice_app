@@ -27,6 +27,11 @@ class Settings(BaseSettings):
 
     AUTHENTICATION_SERVICE_URL: str = os.getenv("AUTHENTICATION_SERVICE_URL", "http://localhost:8001")
 
+    # Azure Blob Storage
+    AZURE_STORAGE_ACCOUNT_NAME: str = os.getenv("AZURE_STORAGE_ACCOUNT_NAME", "")
+    AZURE_STORAGE_ACCOUNT_KEY: str = os.getenv("AZURE_STORAGE_ACCOUNT_KEY", "")
+    AZURE_STORAGE_CONTAINER_NAME: str = os.getenv("AZURE_STORAGE_CONTAINER_NAME", "")
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

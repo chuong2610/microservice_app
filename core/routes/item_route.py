@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, Header
+from typing import Optional
+from fastapi import APIRouter, Depends, Header, UploadFile
 from enums.role_enum import RoleEnum
 from factories.item_factory import ItemServiceFactory
 from schemas.base_response import BaseResponse
+from services.file_service import upload_image
 from utils import verify_token
 
 
@@ -55,20 +57,69 @@ def get_items_by_category(category: str, page_number: int = 1, page_size: int = 
         return BaseResponse(status_code=500, message=str(e), data=None)        
     
 @router.post("")
-def create_item(item_data: dict, user = Depends(verify_token)):
+def create_item(title: str,
+        abstract: str,
+        content: str,
+        author_id: str,
+        images: list[UploadFile] = [],
+        tags: list[str] = [],
+        category: list[str] = [],
+        meta_field: Optional[dict] = None,
+        user = Depends(verify_token)):
     try:
         if(user.get("role") not in [RoleEnum.ADMIN, RoleEnum.WRITER]):
             return BaseResponse(status_code=403, message="Forbidden: You don't have permission to create items", data=None)
+        if images:
+            image_urls = []
+            for image in images:
+                image_url = upload_image(image)
+                image_urls.append(image_url)
+            images = image_urls
+        item_data = {
+            "title": title,
+            "abstract": abstract,
+            "content": content,
+            "images": images,
+            "tags": tags,
+            "category": category,
+            "meta_field": meta_field,
+            "author_id": author_id
+        }
         new_item = item_service.create_item(item_data)
         return BaseResponse(status_code=201, message="Item created successfully", data=new_item.model_dump(mode='json'))
     except Exception as e:
         return BaseResponse(status_code=500, message=str(e), data=None)    
 
 @router.put("/{item_id}")
-def update_item(item_id: str, update_data: dict, user = Depends(verify_token)):
+def update_item(item_id: str, 
+                title: str ,
+                abstract: str,
+                content: str,
+                author_id: str,
+                images: list[UploadFile] = [],
+                tags: list[str] = [],
+                category: list[str] = [],
+                meta_field: Optional[dict] = None,
+                user = Depends(verify_token)):
     try:
         if(user.get("role") not in [RoleEnum.ADMIN, RoleEnum.WRITER]):
             return BaseResponse(status_code=403, message="Forbidden: You don't have permission to update items", data=None)
+        if images:
+            image_urls = []
+            for image in images:
+                image_url = upload_image(image)
+                image_urls.append(image_url)
+            images = image_urls
+        update_data = {
+            "title": title,
+            "abstract": abstract,
+            "content": content,
+            "images": images,
+            "tags": tags,
+            "category": category,
+            "meta_field": meta_field,
+            "author_id": author_id
+        }
         updated_item = item_service.update_item(item_id, update_data)
         if updated_item:
             return BaseResponse(status_code=200, message="Item updated successfully", data=updated_item.model_dump(mode='json'))
@@ -88,6 +139,16 @@ def delete_item(item_id: str, user = Depends(verify_token)):
         else:
             return BaseResponse(status_code=404, message="Item not found", data=None)
     except Exception as e:
+        return BaseResponse(status_code=500, message=str(e), data=None)
+    
+@router.put("/files")
+def upload_file(file: UploadFile, user = Depends(verify_token)):
+    try:
+        if(user.get("role") not in [RoleEnum.ADMIN, RoleEnum.WRITER]):
+            return BaseResponse(status_code=403, message="Forbidden: You don't have permission to upload files", data=None)
+        file_url = upload_image(file)
+        return BaseResponse(status_code=200, message="File uploaded successfully", data={"file_url": file_url})
+    except Exception as e:    
         return BaseResponse(status_code=500, message=str(e), data=None)
 
 @router.post("/{item_id}/view")
